@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
-            $table->id();
-            $table->integer('commentable_id')->unsigned();
-            $table->string('commentable_type');
-            $table->text('content');
-            $table->timestamps();
+        Schema::table('comments', function (Blueprint $table) {
+            $table->timestamp('approved_at')->nullable()->after('content');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::table('comments', function (Blueprint $table) {
+            $table->dropColumn('approved_at');
+        });
     }
 };

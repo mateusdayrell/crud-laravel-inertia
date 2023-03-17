@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Http\Requests\StoreCommentRequest;
+use DebugBar\DebugBar;
+use Exception;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -17,8 +21,8 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::all();
-        // return response()->json(['posts' => $posts], 200);
-        return Inertia::render('Post/index', ['posts' => $posts]);
+        app('debugbar')->error('This is an error...');
+        return Inertia::render('Post/Index', ['posts' => $posts]);
     }
 
     /**
@@ -28,7 +32,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Post/create');
+        return Inertia::render('Post/Create');
     }
 
     /**
@@ -40,9 +44,9 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         $data = $request->validated();
-        $post = Post::create($data);
+        Post::create($data);
 
-        return response()->json(['post' => $post], 200);
+        return Redirect::route('posts.create')->with('message', 'Post cadastrado com sucesso.');
     }
 
     /**
@@ -53,9 +57,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        // $comments = $post->comments()->get();
-        // $post->comments->where('status', 1);
-        return Inertia::render('Post/show', ['post' => $post, /*'comments' => $comments */]);
+        return Inertia::render('Post/Show', ['post' => $post, /*'comments' => $comments */]);
     }
 
     /**
@@ -66,7 +68,7 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return Inertia::render('Post/edit', ['post' => $post]);
+        return Inertia::render('Post/Edit', ['post' => $post]);
     }
 
     /**
@@ -81,7 +83,7 @@ class PostController extends Controller
         $data = $request->all();
         $post->update($data);
 
-        return response()->json($post, 200);
+        return Redirect::back()->with('message', 'Post editado com sucesso.');
     }
 
     /**
@@ -94,6 +96,14 @@ class PostController extends Controller
     {
         $post->delete();
 
-        return response()->json(['success' => 'Post apagado com sucesso.'], 200);
+        return Redirect::route('posts.index')->with('message', 'Post excluído com sucesso.');
+    }
+
+    public function comment(StoreCommentRequest $request, Post $post)
+    {
+        $data = $request->all();
+        $post->comments()->create($data);
+
+        return Redirect::route('posts.show', ['post' => $post])->with('message', 'Comentário criado com sucesso.');
     }
 }

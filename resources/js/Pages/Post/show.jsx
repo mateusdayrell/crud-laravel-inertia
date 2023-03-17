@@ -1,40 +1,23 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import Comments from "../../components/Comments";
+import { Link, useForm } from "@inertiajs/react";
+import Toast from "../../components/Toast";
 
-export default function Post(props) {
-    const [id, setId] = useState('');
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [comments, setComments] = useState([]);
+export default function Show(props) {
+    const { flash } = props
 
-    const [newComment, setNewComment] = useState('')
-    // const [newCommentError, setNewCommentError] = useState('')
+    const { data, setData, post, processing, errors } = useForm({
+        content: '',
+    })
 
-    useEffect(() => {
-        setId(props.post.id)
-        setTitle(props.post.title)
-        setContent(props.post.content)
-        setComments(props.comments)
-    }, []);
-
-    const handleSubmit = async () => {
-        const regTemp = {
-            post_id: id, content: newComment
-        }
-        try {
-            await axios.post("/comments", regTemp)
-            setNewComment('')
-            alert('Comentário realizado com sucesso.')
-            location.reload()
-        } catch (error) {
-            console.log(error)
-            // const err = error?.response?.data?.errors
-            // if(err?.title) setTitleError(err.title)
-        }
+    const handleSubmit = () => {
+        post(`/posts/${props.post.id}/comments`)
+        setData('content', '')
     }
 
     return(
         <div className="base-container">
+            <Toast flash={flash}/>
             <h1 className="main-title">Visualizar Post</h1>
             <div className="input-container">
                 <div className="input-area">
@@ -42,7 +25,7 @@ export default function Post(props) {
                     <input
                         type="text"
                         id="title"
-                        value={title}
+                        value={props.post.title}
                         disabled />
                 </div>
                 <div className="input-area">
@@ -50,7 +33,7 @@ export default function Post(props) {
                     <textarea
                         name="content"
                         id="content"
-                        value={content}
+                        value={props.post.content}
                         readOnly
                         cols="30"
                         rows="10"/>
@@ -61,21 +44,21 @@ export default function Post(props) {
                     <textarea
                         name="content"
                         id="content"
-                        value={newComment}
-                        onChange={e => setNewComment(e.target.value)}
+                        value={data.content}
+                        onChange={e => setData('content', e.target.value)}
+                        placeholder="Digite aqui um comentário"
                         cols="30"
                         rows="2"/>
+                    <small className="error">{errors.content}</small>
                 </div>
-                <div className="flex items-center justify-center gap-4">
-                    <a href="/posts" className="btn bg-gray-400">Voltar</a>
+
+                <div className="input-area flex items-center justify-end gap-4">
+                    <Link href="/posts" className="btn bg-gray-400">Voltar</Link>
                     <button onClick={handleSubmit} className="btn bg-green-600">Comentar</button>
                 </div>
-                <div>
-                    <ul>
-                        {comments.map(comment => (
-                            <p key={comment.id}>{comment.content}</p>
-                        ))}
-                    </ul>
+
+                <div className="input-area">
+                    <Comments comments={props.post.comments} />
                 </div>
             </div>
         </div>
